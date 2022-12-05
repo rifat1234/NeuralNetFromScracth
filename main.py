@@ -16,6 +16,7 @@ if __name__ == '__main__':
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 class NN():
@@ -87,16 +88,13 @@ class NN():
 import csv
 
 nn = NN()
-x = np.array([])
-y = np.array([])
+
 
 n = 3000
 
-with open('normalised.csv', 'r') as file:
-    reader = csv.reader(file)
-
-    first_row = next(reader, None)
-    data = list(reader)
+def processData(data):
+    x = np.array([])
+    y = np.array([])
 
     for row in data:
         if len(row) != 4:
@@ -105,19 +103,29 @@ with open('normalised.csv', 'r') as file:
 
         x = np.concatenate((x, [row[0], row[1]]))
         y = np.concatenate((y, [row[2], row[3]]))
-        # if (len(x) == 2 * n):
-        #     break
 
-x = x.reshape(len(x) // 2, 2)
-y = y.reshape(len(y) // 2, 2)
-scaler = MinMaxScaler()
-scaler.fit(x)
-x = scaler.transform(x)
-scaler.fit(y)
-y = scaler.transform(y)
-x = np.asarray(x, dtype='float64')
-y = np.asarray(y, dtype='float64')
+    x = x.reshape(len(x) // 2, 2)
+    y = y.reshape(len(y) // 2, 2)
+    scaler = MinMaxScaler()
+    scaler.fit(x)
+    x = scaler.transform(x)
+    scaler.fit(y)
+    y = scaler.transform(y)
+    x = np.asarray(x, dtype='float64')
+    y = np.asarray(y, dtype='float64')
 
+    return (x,y)
+
+with open('normalised.csv', 'r') as file:
+    reader = csv.reader(file)
+
+    first_row = next(reader, None)
+    data = list(reader)
+
+    training_data, testing_data = train_test_split(data, test_size=0.2, random_state=25)
+    print(len(training_data[0]))
+    print(len(testing_data[0]))
+    x, y = processData(training_data)
 
 error_list = []
 
