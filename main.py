@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 class NN():
 
-    def __init__(self, i=2, o=2, h=2):
+    def __init__(self, i=2, o=2, h=4):
         self.inputNumber = i
         self.outputNumber = o
         self.hiddenNumber = h
@@ -125,27 +125,34 @@ with open('normalised.csv', 'r') as file:
     training_data, testing_data = train_test_split(data, test_size=0.2, random_state=25)
     print(len(training_data[0]))
     print(len(testing_data[0]))
-    x, y = processData(training_data)
 
+
+x, y = processData(training_data)
+tx,ty = processData(testing_data)
 error_list = []
 
 for i in range(20000):
    px = nn.forward(x)
    nn.backward(x,y,px)
-   error_list.append(np.square(nn.o_error).mean())
+   error_list.append(np.square(y-px).mean())
 
-for i in range(0,n,20):
-   print(i)
-   print(x[i])
-   print(y[i])
-   print(nn.predict([x[i]]))
+   pty = nn.forward(tx)
+   #error_list.append(np.square(ty - pty).mean())
 
+# for i in range(0,n,20):
+#    print(i)
+#    print(x[i])
+#    print(y[i])
+#    print(nn.predict([x[i]]))
 
 plt.plot(range(len(error_list)), error_list)
 plt.title('Mean Sum Squared Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.show()
+
+
+
 
 # import torch
 # import torch.nn as nn
