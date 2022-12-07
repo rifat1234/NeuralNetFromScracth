@@ -15,6 +15,7 @@ if __name__ == '__main__':
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import numpy as np
+import csv
 import matplotlib.pyplot as plt
 
 class NN():
@@ -83,7 +84,7 @@ class NN():
 ##print(nn.predict(px))
 
 
-import csv
+
 
 nn = NN()
 
