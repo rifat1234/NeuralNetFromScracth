@@ -15,7 +15,6 @@ if __name__ == '__main__':
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
@@ -92,6 +91,30 @@ nn = NN()
 
 n = 3000
 
+def normalize(x, y):
+    x0Min = x[:,0].min()
+    x0Max = x[:,0].max()
+    x1Min = x[:,1].min()
+    x1Max = x[:,1].max()
+
+    y0Min = y[:,0].min()
+    y0Max = y[:,0].max()
+    y1Min = y[:,1].min()
+    y1Max = y[:,1].max()
+
+    print(x0Max)
+    print(x0Min)
+    def norm(val,mn,mx):
+        return (val - mn) / (mx - mn)
+
+    for i in range(len(x)):
+        x[i][0] = norm(x[i][0],x0Min,x0Max)
+        x[i][1] = norm(x[i][1],x1Min,x1Max)
+        y[i][0] = norm(y[i][0],y0Min,y0Max)
+        y[i][1] = norm(y[i][1],y1Min,y1Max)
+
+    return (x,y)
+
 def processData(data):
     x = np.array([])
     y = np.array([])
@@ -106,17 +129,12 @@ def processData(data):
 
     x = x.reshape(len(x) // 2, 2)
     y = y.reshape(len(y) // 2, 2)
-    scaler = MinMaxScaler()
-    scaler.fit(x)
-    x = scaler.transform(x)
-    scaler.fit(y)
-    y = scaler.transform(y)
     x = np.asarray(x, dtype='float64')
     y = np.asarray(y, dtype='float64')
-
+    x,y = normalize(x,y)
     return (x,y)
 
-with open('normalised.csv', 'r') as file:
+with open('ce889_dataCollection.csv', 'r') as file:
     reader = csv.reader(file)
 
     first_row = next(reader, None)
