@@ -15,7 +15,6 @@ if __name__ == '__main__':
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 import numpy as np
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 class NN():
@@ -91,6 +90,13 @@ nn = NN()
 
 n = 3000
 
+def splitData(data):
+    data = np.array(data)
+    mask = np.random.rand(len(data)) <= 0.8
+    trainingData = data[mask]
+    testingData = data[~mask]
+
+    return (trainingData, testingData)
 def normalize(x, y):
     x0Min = x[:,0].min()
     x0Max = x[:,0].max()
@@ -102,8 +108,6 @@ def normalize(x, y):
     y1Min = y[:,1].min()
     y1Max = y[:,1].max()
 
-    print(x0Max)
-    print(x0Min)
     def norm(val,mn,mx):
         return (val - mn) / (mx - mn)
 
@@ -140,9 +144,9 @@ with open('ce889_dataCollection.csv', 'r') as file:
     first_row = next(reader, None)
     data = list(reader)
 
-    training_data, testing_data = train_test_split(data, test_size=0.2, random_state=25)
-    print(len(training_data[0]))
-    print(len(testing_data[0]))
+    training_data, testing_data = splitData(data)
+    print(len(training_data))
+    print(len(testing_data))
 
 
 x, y = processData(training_data)
