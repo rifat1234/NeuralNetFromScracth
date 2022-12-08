@@ -18,20 +18,23 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 
+fileName = 'ce889_dataCollection.csv'
+epoch = 20000
 class NN():
 
-    def __init__(self, i=2, o=2, h=4):
+    def __init__(self, i=2, o=2, h=3, lRate = 0.002, mRate = 0.01):
         self.inputNumber = i
         self.outputNumber = o
         self.hiddenNumber = h
-        self.momentumRate = 0.01
-        self.learningRate = 0.002
+        self.momentumRate = mRate
+        self.learningRate = lRate
 
         self.weightInputToHidden = np.random.rand(self.inputNumber, self.hiddenNumber)
         self.weightHiddenToOutput = np.random.rand(self.hiddenNumber + 1, self.outputNumber)
         self.deltaWeightInputToHidden = np.zeros((self.inputNumber, self.hiddenNumber + 1))
         self.deltaWeightHiddenToOutput = np.zeros((self.hiddenNumber + 1, self.outputNumber))
 
+        # For testing
         # self.weightInputToHidden = np.array([[0.6,0.8], [0.7,0.8]])
         # self.weightHiddenToOutput = np.array([[0.5,0.7],[0.5,0.9],[0.4,0.5]])
 
@@ -44,31 +47,42 @@ class NN():
 
     def forward(self, x):
         v = np.matmul(x, self.weightInputToHidden)
-        # print(v)
         self.h = self.sigmoid(v)
         self.h1 = np.insert(self.h, len(self.h[0]), 1, axis=1)
         y = np.matmul(self.h1, self.weightHiddenToOutput)
         return self.sigmoid(y)
 
     def backward(self, x, y, predictedY):
-        self.o_error = y - predictedY
-        # print(o_error)
-        o_delta = self.o_error * self.sigmoidDerivative(predictedY)
-        h_error = np.matmul(o_delta,
+        self.yError = y - predictedY
+        yDelta = self.yError * self.sigmoidDerivative(predictedY)
+        hError = np.matmul(yDelta,
                             np.matrix.transpose(self.weightHiddenToOutput)) * self.learningRate
-        h_delta = h_error * self.sigmoidDerivative(self.h1)
+        hDelta = hError * self.sigmoidDerivative(self.h1)
 
         self.deltaWeightInputToHidden *= self.momentumRate
         self.deltaWeightHiddenToOutput *= self.momentumRate
         self.deltaWeightInputToHidden += np.matmul(np.matrix.transpose(x),
-                                                   h_delta) * self.learningRate
+                                                   hDelta) * self.learningRate
         self.deltaWeightHiddenToOutput += np.matmul(np.matrix.transpose(self.h1),
-                                                    o_delta) * self.learningRate
+                                                    yDelta) * self.learningRate
         self.weightInputToHidden += self.deltaWeightInputToHidden[:, :len(self.deltaWeightInputToHidden[0]) - 1]
         self.weightHiddenToOutput += self.deltaWeightHiddenToOutput
 
     def predict(self, x):
         return self.forward(x)
+
+    def train(self, x, tx, epoch):
+        testErrorList, trainingErrorList = [],[]
+
+        for i in range(epoch):
+            px = nn.forward(x)
+            nn.backward(x, y, px)
+            trainingErrorList.append(np.square(y - px).mean())
+
+            pty = nn.forward(tx)
+            testErrorList.append(np.square(ty - pty).mean())
+
+        return (trainingErrorList, testErrorList)
 
 
 ##nn = NN()
@@ -83,20 +97,11 @@ class NN():
 ##print(nn.predict(x))
 ##print(nn.predict(px))
 
-
-
-
-nn = NN()
-
-
-n = 3000
-
 def splitData(data):
     data = np.array(data)
     mask = np.random.rand(len(data)) <= 0.8
     trainingData = data[mask]
     testingData = data[~mask]
-
     return (trainingData, testingData)
 def normalize(x, y):
     x0Min = x[:,0].min()
@@ -139,36 +144,31 @@ def processData(data):
     x,y = normalize(x,y)
     return (x,y)
 
-with open('ce889_dataCollection.csv', 'r') as file:
-    reader = csv.reader(file)
+def readData(fileName) :
+    with open(fileName, 'r') as file:
+        reader = csv.reader(file)
 
-    first_row = next(reader, None)
-    data = list(reader)
+        first_row = next(reader, None)
+        data = list(reader)
+        return data
 
-    training_data, testing_data = splitData(data)
-    print(len(training_data))
-    print(len(testing_data))
 
+
+
+data = readData(fileName)
+training_data, testing_data = splitData(data)
+print("Training Set Size: %d" %len(training_data))
+print("Testing Set Size: %d" %len(testing_data))
 
 x, y = processData(training_data)
 tx,ty = processData(testing_data)
-error_list = []
 
-for i in range(20000):
-   px = nn.forward(x)
-   nn.backward(x,y,px)
-   error_list.append(np.square(y-px).mean())
+nn = NN()
+trainingErrorList, testingErrorList = nn.train(x, tx, epoch)
+print("After %d epoch, training accuracy: %0.2f & testing accuracy: %0.2f" % (epoch, trainingErrorList[len(trainingErrorList)-1], testingErrorList[len(testingErrorList)-1]))
 
-   pty = nn.forward(tx)
-   #error_list.append(np.square(ty - pty).mean())
 
-# for i in range(0,n,20):
-#    print(i)
-#    print(x[i])
-#    print(y[i])
-#    print(nn.predict([x[i]]))
-
-plt.plot(range(len(error_list)), error_list)
+plt.plot(range(len(trainingErrorList)), trainingErrorList)
 plt.title('Mean Sum Squared Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
@@ -176,19 +176,19 @@ plt.show()
 
 
 
-
+#
 # import torch
 # import torch.nn as nn
 #
-# model = nn.Sequential(nn.Linear(2, 2),
+# model = nn.Sequential(nn.Linear(2, 3),
 #                       nn.Sigmoid(),
-#                       nn.Linear(2, 2),
+#                       nn.Linear(3, 2),
 #                       nn.Sigmoid())
 # print(model)
 # loss_function = nn.MSELoss()
-# optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+# optimizer = torch.optim.SGD(model.parameters(), lr=0.702)
 # losses = []
-# for epoch in range(30000):
+# for epoch in range(20000):
 #     pred_y = model(torch.from_numpy(x).to(torch.float32))
 #     loss = loss_function(pred_y, torch.from_numpy(y).to(torch.float32))
 #     losses.append(loss.item())
@@ -198,13 +198,6 @@ plt.show()
 #
 #     optimizer.step()
 #
-#
-#
-#
-# for i in range(0,n,20):
-#    print(i)
-#    print(pred_y[i])
-#    print(y[i])
 #
 # import matplotlib.pyplot as plt
 #
