@@ -105,6 +105,8 @@ def normalize(data):
     x1Min = data[:, 1].min()
     x1Max = data[:, 1].max()
 
+    global y0Min,y0Max,y1Min,y1Max
+
     y0Min = data[:, 2].min()
     y0Max = data[:, 2].max()
     y1Min = data[:, 3].min()
@@ -121,6 +123,8 @@ def normalize(data):
 
     return data
 
+def denormalize(val, mn, mx):
+    return (val * (mx - mn)) + mn
 def processData(data):
     x = np.array([])
     y = np.array([])
@@ -137,6 +141,8 @@ def processData(data):
     y = y.reshape(len(y) // 2, 2)
     return (x,y)
 
+
+
 def readData(fileName) :
     with open(fileName, 'r') as file:
         reader = csv.reader(file)
@@ -146,8 +152,6 @@ def readData(fileName) :
         data = np.array(data)
         data = np.asarray(data, dtype='float64')
         return data
-
-
 
 
 data = readData(fileName)
@@ -162,7 +166,9 @@ tx,ty = processData(testing_data)
 nn = NN()
 trainingErrorList, testingErrorList = nn.train(x, tx, epoch)
 print("After %d epoch, training accuracy: %0.4f & testing accuracy: %0.4f" % (epoch, trainingErrorList[len(trainingErrorList)-1], testingErrorList[len(testingErrorList)-1]))
-
+print("y0 min %lf, y0 max %lf \ny1 min %lf, y1 max %lf" %(y0Min, y0Max, y1Min, y1Max))
+print("Weight Input to Hidden \n%s" %(nn.weightInputToHidden))
+print("Weight Hidden to Input \n%s" %(nn.weightHiddenToOutput))
 
 plt.plot(range(len(trainingErrorList)), trainingErrorList)
 plt.title('Mean Sum Squared Loss')
