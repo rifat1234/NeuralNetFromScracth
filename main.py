@@ -22,7 +22,7 @@ fileName = 'ce889_dataCollection.csv'
 epoch = 20000
 class NN():
 
-    def __init__(self, i=2, o=2, h=4, lRate = 0.001, mRate = 0.01):
+    def __init__(self, i=2, o=2, h=3, lRate = 0.003, mRate = 0.015):
         self.inputNumber = i
         self.outputNumber = o
         self.hiddenNumber = h
@@ -33,10 +33,6 @@ class NN():
         self.weightHiddenToOutput = np.random.rand(self.hiddenNumber + 1, self.outputNumber)
         self.deltaWeightInputToHidden = np.zeros((self.inputNumber, self.hiddenNumber + 1))
         self.deltaWeightHiddenToOutput = np.zeros((self.hiddenNumber + 1, self.outputNumber))
-
-        # For testing
-        # self.weightInputToHidden = np.array([[0.6,0.8], [0.7,0.8]])
-        # self.weightHiddenToOutput = np.array([[0.5,0.7],[0.5,0.9],[0.4,0.5]])
 
     def sigmoid(self, s):
         lamb = 0.7
@@ -124,27 +120,6 @@ def normalize(data):
         data[i][3] = norm(data[i][3],y1Min,y1Max)
 
     return data
-# def normalize(x, y):
-#     x0Min = x[:,0].min()
-#     x0Max = x[:,0].max()
-#     x1Min = x[:,1].min()
-#     x1Max = x[:,1].max()
-#
-#     y0Min = y[:,0].min()
-#     y0Max = y[:,0].max()
-#     y1Min = y[:,1].min()
-#     y1Max = y[:,1].max()
-#
-#     def norm(val,mn,mx):
-#         return (val - mn) / (mx - mn)
-#
-#     for i in range(len(x)):
-#         x[i][0] = norm(x[i][0],x0Min,x0Max)
-#         x[i][1] = norm(x[i][1],x1Min,x1Max)
-#         y[i][0] = norm(y[i][0],y0Min,y0Max)
-#         y[i][1] = norm(y[i][1],y1Min,y1Max)
-#
-#     return (x,y)
 
 def processData(data):
     x = np.array([])
@@ -160,9 +135,6 @@ def processData(data):
 
     x = x.reshape(len(x) // 2, 2)
     y = y.reshape(len(y) // 2, 2)
-    # x = np.asarray(x, dtype='float64')
-    # y = np.asarray(y, dtype='float64')
-    # x,y = normalize(x,y)
     return (x,y)
 
 def readData(fileName) :
