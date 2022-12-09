@@ -22,7 +22,7 @@ fileName = 'ce889_dataCollection.csv'
 epoch = 20000
 class NN():
 
-    def __init__(self, i=2, o=2, h=3, lRate = 0.002, mRate = 0.01):
+    def __init__(self, i=2, o=2, h=4, lRate = 0.001, mRate = 0.01):
         self.inputNumber = i
         self.outputNumber = o
         self.hiddenNumber = h
@@ -98,32 +98,53 @@ class NN():
 ##print(nn.predict(px))
 
 def splitData(data):
-    data = np.array(data)
     mask = np.random.rand(len(data)) <= 0.8
     trainingData = data[mask]
     testingData = data[~mask]
     return (trainingData, testingData)
-def normalize(x, y):
-    x0Min = x[:,0].min()
-    x0Max = x[:,0].max()
-    x1Min = x[:,1].min()
-    x1Max = x[:,1].max()
 
-    y0Min = y[:,0].min()
-    y0Max = y[:,0].max()
-    y1Min = y[:,1].min()
-    y1Max = y[:,1].max()
+def normalize(data):
+    x0Min = data[:, 0].min()
+    x0Max = data[:, 0].max()
+    x1Min = data[:, 1].min()
+    x1Max = data[:, 1].max()
+
+    y0Min = data[:, 2].min()
+    y0Max = data[:, 2].max()
+    y1Min = data[:, 3].min()
+    y1Max = data[:, 3].max()
 
     def norm(val,mn,mx):
         return (val - mn) / (mx - mn)
 
-    for i in range(len(x)):
-        x[i][0] = norm(x[i][0],x0Min,x0Max)
-        x[i][1] = norm(x[i][1],x1Min,x1Max)
-        y[i][0] = norm(y[i][0],y0Min,y0Max)
-        y[i][1] = norm(y[i][1],y1Min,y1Max)
+    for i in range(len(data)):
+        data[i][0] = norm(data[i][0],x0Min,x0Max)
+        data[i][1] = norm(data[i][1],x1Min,x1Max)
+        data[i][2] = norm(data[i][2],y0Min,y0Max)
+        data[i][3] = norm(data[i][3],y1Min,y1Max)
 
-    return (x,y)
+    return data
+# def normalize(x, y):
+#     x0Min = x[:,0].min()
+#     x0Max = x[:,0].max()
+#     x1Min = x[:,1].min()
+#     x1Max = x[:,1].max()
+#
+#     y0Min = y[:,0].min()
+#     y0Max = y[:,0].max()
+#     y1Min = y[:,1].min()
+#     y1Max = y[:,1].max()
+#
+#     def norm(val,mn,mx):
+#         return (val - mn) / (mx - mn)
+#
+#     for i in range(len(x)):
+#         x[i][0] = norm(x[i][0],x0Min,x0Max)
+#         x[i][1] = norm(x[i][1],x1Min,x1Max)
+#         y[i][0] = norm(y[i][0],y0Min,y0Max)
+#         y[i][1] = norm(y[i][1],y1Min,y1Max)
+#
+#     return (x,y)
 
 def processData(data):
     x = np.array([])
@@ -139,9 +160,9 @@ def processData(data):
 
     x = x.reshape(len(x) // 2, 2)
     y = y.reshape(len(y) // 2, 2)
-    x = np.asarray(x, dtype='float64')
-    y = np.asarray(y, dtype='float64')
-    x,y = normalize(x,y)
+    # x = np.asarray(x, dtype='float64')
+    # y = np.asarray(y, dtype='float64')
+    # x,y = normalize(x,y)
     return (x,y)
 
 def readData(fileName) :
@@ -150,12 +171,15 @@ def readData(fileName) :
 
         first_row = next(reader, None)
         data = list(reader)
+        data = np.array(data)
+        data = np.asarray(data, dtype='float64')
         return data
 
 
 
 
 data = readData(fileName)
+data = normalize(data)
 training_data, testing_data = splitData(data)
 print("Training Set Size: %d" %len(training_data))
 print("Testing Set Size: %d" %len(testing_data))
@@ -165,7 +189,7 @@ tx,ty = processData(testing_data)
 
 nn = NN()
 trainingErrorList, testingErrorList = nn.train(x, tx, epoch)
-print("After %d epoch, training accuracy: %0.2f & testing accuracy: %0.2f" % (epoch, trainingErrorList[len(trainingErrorList)-1], testingErrorList[len(testingErrorList)-1]))
+print("After %d epoch, training accuracy: %0.4f & testing accuracy: %0.4f" % (epoch, trainingErrorList[len(trainingErrorList)-1], testingErrorList[len(testingErrorList)-1]))
 
 
 plt.plot(range(len(trainingErrorList)), trainingErrorList)
