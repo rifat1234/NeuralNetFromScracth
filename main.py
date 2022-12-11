@@ -19,15 +19,16 @@ import csv
 import matplotlib.pyplot as plt
 
 fileName = 'ce889_dataCollection.csv'
-epoch = 20000
+epoch = 90000
 class NN():
 
-    def __init__(self, i=2, o=2, h=3, lRate = 0.003, mRate = 0.015):
+    def __init__(self, i=2, o=2, h=4, lRate = 0.005, mRate = 0.02, lambSig = 0.8):
         self.inputNumber = i
         self.outputNumber = o
         self.hiddenNumber = h
         self.momentumRate = mRate
         self.learningRate = lRate
+        self.lambdaSig = lambSig
 
         self.weightInputToHidden = np.random.rand(self.inputNumber, self.hiddenNumber)
         self.weightHiddenToOutput = np.random.rand(self.hiddenNumber + 1, self.outputNumber)
@@ -35,7 +36,7 @@ class NN():
         self.deltaWeightHiddenToOutput = np.zeros((self.hiddenNumber + 1, self.outputNumber))
 
     def sigmoid(self, s):
-        lamb = 0.7
+        lamb = self.lambdaSig
         return 1.0 / (1.0 + np.exp(-s * lamb))
 
     def sigmoidDerivative(self, s):
@@ -79,19 +80,6 @@ class NN():
             testErrorList.append(np.square(ty - pty).mean())
 
         return (trainingErrorList, testErrorList)
-
-
-##nn = NN()
-##x = np.array([[1,1],[0.5,0.4],[0.1,1],[1,0.7]])
-##y = np.array([[0.5,0.5],[0.25,0.2],[0.05,0.5],[0.5,0.35]])
-##for i in range( 10000):
-##    #print('epoch ', i)
-##    px = nn.forward(x)
-##    nn.backward(x,y,px)
-##
-##px = np.array([[0.3,0.2],[0.15,0.24]])
-##print(nn.predict(x))
-##print(nn.predict(px))
 
 def splitData(data):
     mask = np.random.rand(len(data)) <= 0.8
@@ -165,18 +153,39 @@ tx,ty = processData(testing_data)
 
 nn = NN()
 trainingErrorList, testingErrorList = nn.train(x, tx, epoch)
-print("After %d epoch, training accuracy: %0.4f & testing accuracy: %0.4f" % (epoch, trainingErrorList[len(trainingErrorList)-1], testingErrorList[len(testingErrorList)-1]))
+testMin, epochTest = min((val, idx) for (idx, val) in enumerate(testingErrorList))
+trainMin, epochTrain = min((val, idx) for (idx, val) in enumerate(trainingErrorList))
+print("After %d epoch, training accuracy: %lf, %d epochs  & testing accuracy: %lf, %d epochs"
+      % (epoch, trainMin, epochTrain, testMin, epochTest))
 print("y0 min %lf, y0 max %lf \ny1 min %lf, y1 max %lf" %(y0Min, y0Max, y1Min, y1Max))
 print("Weight Input to Hidden \n%s" %(nn.weightInputToHidden))
 print("Weight Hidden to Input \n%s" %(nn.weightHiddenToOutput))
 
-plt.plot(range(len(trainingErrorList)), trainingErrorList)
+plt.plot(range(len(trainingErrorList)), testingErrorList)
 plt.title('Mean Sum Squared Loss')
 plt.xlabel('Epoch')
 plt.ylabel('Loss')
 plt.show()
 
 
+lRate = [x * 0.001 for x in range(1, 6)]
+mRate = [x * 0.005 for x in range(1, 7)]
+lambSig = [x * 0.1 for x in range(0, 10)]
+print(lRate)
+print(mRate)
+print(lambSig)
+
+mn = 2000.0
+
+# for h in range(2,11):
+#     for l in lRate:
+#         for m in mRate:
+#             nn = NN(2,2,h,l,m,0.7)
+#             trainingErrorList, testingErrorList = nn.train(x, tx, epoch)
+#             val, idx = min((val, idx) for (idx, val) in enumerate(testingErrorList))
+#             if val < mn:
+#                 mn = val
+#                 print("h = %d, l = %lf, m = %lf, lSig = %lf, min = %lf index = %d" %(h,l,m,0.7, mn, idx))
 
 #
 # import torch
